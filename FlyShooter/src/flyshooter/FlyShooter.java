@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package flyshooter;
 
 import java.awt.EventQueue;
@@ -23,6 +18,8 @@ public class FlyShooter extends JFrame
     
     private void initUI()    
     {
+        add(new Board());
+        
         setResizable(false);
         pack();
         

@@ -1,15 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package flyshooter;
 
 /**
  *
  * @author Blackleon
  */
-public class Fly
+public class Fly extends Sprite
 {
+    public Fly(int x, int y)
+    {
+        super(x,y);
+        
+        initFly();
+    }
     
+    private void initFly()
+    {
+        loadImage("\\images\\fly.png");
+        getImageDimensions();
+    }
+    
+    public void move()
+    {
+        //Fly algorithm goes here
+    }
 }
