@@ -2,6 +2,7 @@ package flyshooter;
 
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 /**
@@ -11,14 +12,14 @@ import javax.swing.ImageIcon;
 
 public class Sprite
 {
-    protected int x;
-    protected int y;
+    protected double x;
+    protected double y;
     protected int width;
     protected int height;
     protected boolean vis;
     protected Image image;
 
-    public Sprite(int x, int y)
+    public Sprite(double x, double y)
     {
         this.x = x;
         this.y = y;
@@ -29,6 +30,7 @@ public class Sprite
     {
         width = image.getWidth(null);
         height = image.getHeight(null);
+        
     }
     
     protected void loadImage(String imageName)
@@ -42,12 +44,12 @@ public class Sprite
         return image;
     }
     
-    public int getX()
+    public double getX()
     {
         return x;
     }
     
-    public int getY()
+    public double getY()
     {
         return y;
     }
@@ -64,7 +66,7 @@ public class Sprite
     
     public Rectangle getBounds() 
     {
-        return new Rectangle(x, y, width, height);
+        return new Rectangle((int)x, (int)y, width, height);
     }
     
     
