@@ -35,8 +35,8 @@ public class FlyShooter extends JFrame
         EventQueue.invokeLater(new Runnable(){
         @Override
         public void run() {
-            FlyShooter fly = new FlyShooter();
-            fly.setVisible(true);
+            FlyShooter flsh = new FlyShooter();
+            flsh.setVisible(true);
         }
         });
     }
