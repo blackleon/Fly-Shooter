@@ -1,7 +1,11 @@
 package flyshooter;
 
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+
 
 /**
  *
@@ -10,12 +14,14 @@ import java.util.ArrayList;
 public class Cannon extends Sprite
 {
     private int angle = 0;
+    private Sound fire;
+    
     
     private ArrayList<CBall> cball;
     public Cannon(double x, double y)
     {
         super(x, y);
-        
+        fire = new Sound("sounds\\fire.wav");
         initCannon();
     }
     
@@ -26,11 +32,6 @@ public class Cannon extends Sprite
         getImageDimensions();
     }
     
-    public void move()
-    {
-        //W I P
-    }
-
     public ArrayList getCBall()
     {
         return cball;
@@ -43,7 +44,11 @@ public class Cannon extends Sprite
     
     public void fire()
     {
-        cball.add(new CBall(x+20, y+10, angle));
+        if(vis)
+        {
+            cball.add(new CBall(x+15, y+10, angle));
+            fire.play();
+        }
     }
     
     public void keyPressed(KeyEvent e)
@@ -53,34 +58,18 @@ public class Cannon extends Sprite
         if(key == KeyEvent.VK_SPACE)
         {
             fire();
-            //PlaySound
         }
         
         if(key == KeyEvent.VK_LEFT)
         {
-            angle=(angle-5)%360;
+            angle=(angle-3)%360;
             
         }
         
         if(key == KeyEvent.VK_RIGHT)
         {
-            angle=(angle+5)%360;
+            angle=(angle+3)%360;
         }
     }
-    
-    /*public void keyReleased(KeyEvent e)
-    {
-        int key = e.getKeyCode();
-        
-        if(key == KeyEvent.VK_LEFT)
-        {
-            //release
-        }
-        
-        if(key == KeyEvent.VK_RIGHT)
-        {
-            //release
-        }
-    }*/
 }
 

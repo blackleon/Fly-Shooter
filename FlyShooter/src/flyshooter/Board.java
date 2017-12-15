@@ -25,14 +25,18 @@ public class Board extends JPanel implements ActionListener
 {
     private Timer timer;
     private ArrayList<Fly> fly = new ArrayList<>();
+    ArrayList<CBall> cball = new ArrayList<>();
     private Cannon cannon;
     private int maxFly=10;
-    private int flyNo;
+    private int flyNo=0;
     private boolean ingame;
     private final int DELAY = 15;
     private final int B_WIDTH = 500;
     private final int B_HEIGHT = 500;
     Random r = new Random();
+    private Sound buzz;
+    
+    
     AffineTransform identity = new AffineTransform();
     
     public Board()
@@ -47,11 +51,12 @@ public class Board extends JPanel implements ActionListener
         setBackground(Color.lightGray);
         ingame = true;
         
+        buzz = new Sound("sounds\\buzz.wav");
+        
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         
-        cannon = new Cannon(B_WIDTH/2 ,B_HEIGHT/2);
+        cannon = new Cannon(B_WIDTH/2-21 ,B_HEIGHT-50);
         
-        flyNo=0;
         initFly();
 
         timer = new Timer(DELAY, this);
@@ -60,18 +65,7 @@ public class Board extends JPanel implements ActionListener
     
     public void initFly()
     {
-        while(flyNo<maxFly)
-        {
-            /*if(fly.isEmpty()==false)
-            {
-                fly.get(0).setVisible(false);
-                fly.remove(0);
-                System.gc();
-            }*/
-            fly.add( new Fly(r.nextInt(B_WIDTH), r.nextInt(B_HEIGHT)));
-            fly.get(0).setVisible(true);
-            flyNo++;
-        }
+        fly.add(new Fly(r.nextInt(B_WIDTH-100)+50, r.nextInt(B_HEIGHT-100)+50));
     }
     
     @Override
@@ -94,7 +88,7 @@ public class Board extends JPanel implements ActionListener
             Graphics2D g2d = (Graphics2D)g;
             AffineTransform at = new AffineTransform();
             at.setTransform(identity);
-            at.rotate(Math.toRadians(cannon.getAngle()), cannon.getX()+30, cannon.getY()+21);
+            at.rotate(Math.toRadians(cannon.getAngle()), cannon.getX()+15, cannon.getY()+12);
             at.translate(cannon.getX(), cannon.getY());
             g2d.drawImage(cannon.getImage(), at, this);
         }
@@ -102,25 +96,33 @@ public class Board extends JPanel implements ActionListener
     private void drawObjects(Graphics g)
     {
         
-        ArrayList<CBall> cball = cannon.getCBall();
+        cball = cannon.getCBall();
         
         for(CBall cb : cball)
         {
             if(cb.isVisible())
             {
-                g.drawImage(cb.getImage(),(int) cb.getX(), (int)cb.getY(), this);
+                g.drawImage(cb.getImage(),
+                            (int) cb.getX()-5, 
+                            (int)cb.getY()-5, 
+                            this);
             }
         }
         
-        if(fly.get(0)!=null && fly.get(0).isVisible())
+        if(fly.get(flyNo).isVisible())
         {
-            g.drawImage(fly.get(0).getImage(), (int)fly.get(0).getX(), (int)fly.get(0).getY(), this);
+            g.drawImage(fly.get(flyNo).getImage(),
+                        (int) fly.get(flyNo).getX(), 
+                        (int)fly.get(flyNo).getY(), 
+                        this);
         }
     }
     
     private void drawGameOver(Graphics g)
     {
-        //Game Over Screen Goes here!
+        cannon.setVisible(false);
+        fly.removeAll(fly);
+        cball.removeAll(cball);
     }
     
     
@@ -129,13 +131,13 @@ public class Board extends JPanel implements ActionListener
     {
         inGame();
         
-        updateCannon();
         updateCBall();
         updateFly();
         
         checkCollisions();
         
         repaint();
+        //System.out.println(System.nanoTime()/10^9);
     }
     
     private void inGame()
@@ -143,14 +145,6 @@ public class Board extends JPanel implements ActionListener
         if(!ingame)
         {
             timer.stop();
-        }
-    }
-    
-    private void updateCannon()
-    {
-        if(cannon.isVisible())
-        {
-            cannon.move();
         }
     }
     
@@ -168,18 +162,16 @@ public class Board extends JPanel implements ActionListener
                 }else
                 {
                     it.remove();
-                    initFly();
                 }
             }
         }
-        
     }
     
     private void updateFly()
     {
-        if(fly!= null && fly.get(0).isVisible())
+        if(fly!= null && fly.get(flyNo).isVisible())
         {
-            fly.get(0).move();
+            fly.get(flyNo).move();
         }
     }
     
@@ -188,7 +180,7 @@ public class Board extends JPanel implements ActionListener
         Rectangle r1 = new Rectangle();
         if(fly!=null)
         {
-            r1 = fly.get(0).getBounds();
+            r1 = fly.get(flyNo).getBounds();
         }
         
         
@@ -199,20 +191,24 @@ public class Board extends JPanel implements ActionListener
             Rectangle r2 = cb.getBounds();
             if(r1.intersects(r2))
             {
-                //Play Fly buzz sound for death
-                fly.get(0).setVisible(false);
-                //initFly();
+                buzz.play();
+                fly.get(flyNo).setVisible(false);
+                flyNo++;
+                if(flyNo < maxFly)
+                {
+                   initFly(); 
+                }else
+                {
+                    ingame = false;
+                    inGame();
+                }
+                
                 cb.setVisible(false);
             }
         }
     }
     
     private class TAdapter extends KeyAdapter{
-        /*@Override
-        public void keyReleased(KeyEvent e)
-        {
-            cannon.keyReleased(e);
-        }*/
         
         @Override
         public void keyPressed(KeyEvent e)

@@ -6,13 +6,13 @@ package flyshooter;
  */
 public class Fly extends Sprite
 {
+    
     public Fly(double x, double y)
     {
         super(x,y);
-        
         initFly();
     }
-    
+
     private void initFly()
     {
         loadImage("images\\fly.png");
