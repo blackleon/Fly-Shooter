@@ -1,5 +1,6 @@
 package flyshooter;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -10,6 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -73,13 +78,23 @@ public class Board extends JPanel implements ActionListener
             }
         });
         
+        addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                cannon.rotateToMouse(e);
+                cannon.fire();
+            }
+        });
+                
         addKeyListener(new TAdapter());
         setFocusable(true);
         setBackground(Color.lightGray);
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         
         buzz = new Sound("sounds\\buzz.wav");
-        cannon = new Cannon(B_WIDTH/2-12 ,B_HEIGHT-30);
+        cannon = new Cannon(B_WIDTH/2-16 ,B_HEIGHT-30);
 
         timer = new Timer(DELAY, this);
         
@@ -107,7 +122,7 @@ public class Board extends JPanel implements ActionListener
     
     public void initFly()
     {
-        fly.add(new Fly(r.nextInt(B_WIDTH-100)+50, r.nextInt(B_HEIGHT-200)+50));
+        fly.add(new Fly(r.nextInt(B_WIDTH-50)+25, r.nextInt(B_HEIGHT-200)+50));
     }
     
     @Override
@@ -183,9 +198,15 @@ public class Board extends JPanel implements ActionListener
     private void drawTimeScore(Graphics g)
     {
         String sTime;
+        int start = 20;
+        Graphics2D g2d = (Graphics2D) g;
         scoreTime = (System.nanoTime()*1e-6)-scoreTimer;
         sTime = String.format("Time: %10.2f      Score: %10d      Flies Shot: %2d/%2d", (scoreTime)*1e-3, score, flyNo, maxFly);
-        g.drawString(sTime, 50, 10); 
+        g2d.setStroke(new BasicStroke(10));
+        g2d.drawLine(start, 480, start + cannon.getPassed()/5, 480);
+        g2d.drawLine(B_WIDTH-start, 480, start + B_WIDTH-2*start-(cannon.getPassed()/5), 480);
+        g.setFont(new Font("", Font.PLAIN, 15));
+        g2d.drawString(sTime, 75, 20); 
         
     }
     
@@ -193,8 +214,10 @@ public class Board extends JPanel implements ActionListener
     public void actionPerformed(ActionEvent e)
     {
         inGame();
+
         updateCBall();
         updateFly();
+        updateCannon();
         
         checkCollisions();
         
@@ -206,6 +229,15 @@ public class Board extends JPanel implements ActionListener
         if(!ingame)
         {
             timer.stop();
+        }
+    }
+    
+    private void updateCannon()
+    {
+        cannon.setPassed((int) (System.nanoTime()*1e-6)-cannon.getTimer()) ;
+        if(cannon.getPassed()>1000)
+        {
+            cannon.setPassed(1000);
         }
     }
     
@@ -276,7 +308,9 @@ public class Board extends JPanel implements ActionListener
             }
         }
     }
+
     
+
     private class TAdapter extends KeyAdapter{
         
         @Override
@@ -285,5 +319,4 @@ public class Board extends JPanel implements ActionListener
             cannon.keyPressed(e);
         }
     }
-    
 }

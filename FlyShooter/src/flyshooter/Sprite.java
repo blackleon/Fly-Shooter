@@ -2,7 +2,6 @@ package flyshooter;
 
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 /**
