@@ -2,6 +2,7 @@ package flyshooter;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -13,6 +14,7 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -23,19 +25,27 @@ import javax.swing.Timer;
 
 public class Board extends JPanel implements ActionListener
 {
-    private Timer timer;
-    private ArrayList<Fly> fly = new ArrayList<>();
-    ArrayList<CBall> cball = new ArrayList<>();
-    private Cannon cannon;
-    private int maxFly=10;
-    private int flyNo=0;
     private boolean ingame;
+    
     private final int DELAY = 15;
     private final int B_WIDTH = 500;
     private final int B_HEIGHT = 500;
-    Random r = new Random();
-    private Sound buzz;
+    private final int maxFly=10;
+   
+    private int flyNo;
+    private int score;
     
+    private double scoreTimer;
+    private double scoreTimeLast;
+    private double scoreTime;
+    
+    private Timer timer;
+    private ArrayList<Fly> fly;
+    private ArrayList<CBall> cball;
+    private Cannon cannon;
+    private Random r;
+    private Sound buzz;
+    private JButton reset;
     
     AffineTransform identity = new AffineTransform();
     
@@ -46,26 +56,58 @@ public class Board extends JPanel implements ActionListener
     
     private void initBoard()
     {
+        this.setLayout(null);
+        
+        fly = new ArrayList<>();
+        cball = new ArrayList<>();
+        r = new Random();
+        reset = new JButton("Reset");
+        this.add(reset);
+        reset.setBounds(200, 400, 100, 30);
+        
+        reset.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                reset();
+            }
+        });
+        
         addKeyListener(new TAdapter());
         setFocusable(true);
         setBackground(Color.lightGray);
-        ingame = true;
-        
-        buzz = new Sound("sounds\\buzz.wav");
-        
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         
-        cannon = new Cannon(B_WIDTH/2-21 ,B_HEIGHT-50);
-        
-        initFly();
+        buzz = new Sound("sounds\\buzz.wav");
+        cannon = new Cannon(B_WIDTH/2-12 ,B_HEIGHT-30);
 
         timer = new Timer(DELAY, this);
+        
+        initFly();
+        reset();
+    }
+    
+    private void reset()
+    {
+        setBackground(Color.lightGray);
+        
+        flyNo = 0;
+        score = 0;
+        ingame = true;
+        scoreTimer=System.nanoTime()*1e-6;
+        scoreTime=0;
+        scoreTimeLast=0;
         timer.start();
+        
+        reset.setVisible(false);
+        cannon.setVisible(true);
+        cannon.setAngle(90);
+        initFly();
     }
     
     public void initFly()
     {
-        fly.add(new Fly(r.nextInt(B_WIDTH-100)+50, r.nextInt(B_HEIGHT-100)+50));
+        fly.add(new Fly(r.nextInt(B_WIDTH-100)+50, r.nextInt(B_HEIGHT-200)+50));
     }
     
     @Override
@@ -75,6 +117,7 @@ public class Board extends JPanel implements ActionListener
         
         if(ingame)
         {
+            drawTimeScore(g);
             drawObjects(g);
             drawCannon(g);
         }else{
@@ -123,21 +166,39 @@ public class Board extends JPanel implements ActionListener
         cannon.setVisible(false);
         fly.removeAll(fly);
         cball.removeAll(cball);
+
+        reset.setVisible(true);
+        
+        setBackground(Color.black);
+        g.setColor(Color.white);
+        g.setFont(new Font("", Font.PLAIN, 30));
+        
+        String sTime;
+        scoreTime = (System.nanoTime()*1e-6)-scoreTimer;
+        sTime = String.format("Time: %10.2f     Score: %10d", (scoreTime)*1e-3, score);
+        g.drawString("GAME OVER", 150, B_HEIGHT/2-30);
+        g.drawString(sTime, 20, B_HEIGHT/2+30);
     }
     
+    private void drawTimeScore(Graphics g)
+    {
+        String sTime;
+        scoreTime = (System.nanoTime()*1e-6)-scoreTimer;
+        sTime = String.format("Time: %10.2f      Score: %10d      Flies Shot: %2d/%2d", (scoreTime)*1e-3, score, flyNo, maxFly);
+        g.drawString(sTime, 50, 10); 
+        
+    }
     
     @Override
     public void actionPerformed(ActionEvent e)
     {
         inGame();
-        
         updateCBall();
         updateFly();
         
         checkCollisions();
         
         repaint();
-        //System.out.println(System.nanoTime()/10^9);
     }
     
     private void inGame()
@@ -150,6 +211,9 @@ public class Board extends JPanel implements ActionListener
     
     private void updateCBall()
     {
+        
+        
+        
         ArrayList<CBall> cball = cannon.getCBall();
         if(cball.isEmpty()==false)
         {
@@ -193,10 +257,15 @@ public class Board extends JPanel implements ActionListener
             {
                 buzz.play();
                 fly.get(flyNo).setVisible(false);
+                
+                score +=(int)(1e+6/(scoreTime-scoreTimeLast));
+                scoreTimeLast=(System.nanoTime()*1e-6)-scoreTimer;
+                
+                
                 flyNo++;
                 if(flyNo < maxFly)
                 {
-                   initFly(); 
+                   initFly();
                 }else
                 {
                     ingame = false;

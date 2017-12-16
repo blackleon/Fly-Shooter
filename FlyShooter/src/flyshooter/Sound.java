@@ -15,14 +15,12 @@ import javax.sound.sampled.Clip;
  */
 public class Sound
 {
-    double timer;
     File sound;
     boolean playing = false;
     
     public Sound(String s)
     {
         sound = new File(s);
-        timer = System.nanoTime()/10^9;
     }
     public void play() 
     {
@@ -31,9 +29,6 @@ public class Sound
             Clip clip = AudioSystem.getClip();
             clip.open(AudioSystem.getAudioInputStream(sound));
             clip.start();
-            
-            
-            
         }
         catch (Exception e)
         {

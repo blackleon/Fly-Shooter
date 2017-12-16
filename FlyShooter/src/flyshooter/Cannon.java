@@ -15,13 +15,14 @@ public class Cannon extends Sprite
 {
     private int angle = 0;
     private Sound fire;
-    
+    private int timer;
     
     private ArrayList<CBall> cball;
     public Cannon(double x, double y)
     {
         super(x, y);
         fire = new Sound("sounds\\fire.wav");
+        timer = (int)(System.nanoTime()*1e-6);
         initCannon();
     }
     
@@ -42,12 +43,18 @@ public class Cannon extends Sprite
         return angle;
     }
     
+    public void setAngle(int angle)
+    {
+        this.angle = -angle;
+    }
+    
     public void fire()
     {
-        if(vis)
+        if(vis&&(System.nanoTime()*1e-6)-timer>500)
         {
             cball.add(new CBall(x+15, y+10, angle));
             fire.play();
+            timer = (int)(System.nanoTime()*1e-6);
         }
     }
     
