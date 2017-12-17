@@ -13,9 +13,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
@@ -36,21 +36,34 @@ public class Board extends JPanel implements ActionListener
     private final int B_WIDTH = 500;
     private final int B_HEIGHT = 500;
     private final int maxFly=10;
+    
    
     private int flyNo;
     private int score;
+    private int ballCount;
     
     private double scoreTimer;
     private double scoreTimeLast;
     private double scoreTime;
     
+    
     private Timer timer;
+    
     private ArrayList<Fly> fly;
     private ArrayList<CBall> cball;
+    
     private Cannon cannon;
+    
     private Random r;
+    
     private Sound buzz;
+    
     private JButton reset;
+    
+    private Area floor;
+    private Area temp;
+    
+    private Rectangle rc;
     
     AffineTransform identity = new AffineTransform();
     
@@ -70,6 +83,7 @@ public class Board extends JPanel implements ActionListener
         this.add(reset);
         reset.setBounds(200, 400, 100, 30);
         
+        
         reset.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e)
@@ -83,8 +97,13 @@ public class Board extends JPanel implements ActionListener
             @Override
             public void mousePressed(MouseEvent e)
             {
+                boolean succeed;
                 cannon.rotateToMouse(e);
-                cannon.fire();
+                succeed = cannon.fire();
+                if(succeed)
+                {
+                    ballCount++;
+                }
             }
         });
                 
@@ -94,8 +113,8 @@ public class Board extends JPanel implements ActionListener
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         
         buzz = new Sound("sounds\\buzz.wav");
-        cannon = new Cannon(B_WIDTH/2-16 ,B_HEIGHT-30);
-
+        cannon = new Cannon(B_WIDTH/2-16 ,B_HEIGHT-80);
+        
         timer = new Timer(DELAY, this);
         
         initFly();
@@ -104,8 +123,15 @@ public class Board extends JPanel implements ActionListener
     
     private void reset()
     {
-        setBackground(Color.lightGray);
+        setBackground(new Color(135,200,250));
+        temp = new Area(new Rectangle(0, B_HEIGHT*18/20, B_WIDTH, B_HEIGHT));
+        floor = new Area(temp);
+        temp = new Area(new Rectangle(0, 0, B_WIDTH*2/20, B_HEIGHT));
+        floor.add(temp);
+        temp = new Area(new Rectangle(B_WIDTH*18/20, 0, B_WIDTH, B_HEIGHT));
+        floor.add(temp);
         
+        ballCount=1;
         flyNo = 0;
         score = 0;
         ingame = true;
@@ -132,9 +158,9 @@ public class Board extends JPanel implements ActionListener
         
         if(ingame)
         {
-            drawTimeScore(g);
             drawObjects(g);
             drawCannon(g);
+            drawTimeScore(g);
         }else{
             drawGameOver(g);
         }
@@ -149,6 +175,10 @@ public class Board extends JPanel implements ActionListener
             at.rotate(Math.toRadians(cannon.getAngle()), cannon.getX()+15, cannon.getY()+12);
             at.translate(cannon.getX(), cannon.getY());
             g2d.drawImage(cannon.getImage(), at, this);
+            
+            g2d.setColor(new Color(200,255,250));
+            g2d.fill(floor);
+            
         }
     }
     private void drawObjects(Graphics g)
@@ -200,6 +230,8 @@ public class Board extends JPanel implements ActionListener
         String sTime;
         int start = 20;
         Graphics2D g2d = (Graphics2D) g;
+        
+        g2d.setColor(Color.DARK_GRAY);
         scoreTime = (System.nanoTime()*1e-6)-scoreTimer;
         sTime = String.format("Time: %10.2f      Score: %10d      Flies Shot: %2d/%2d", (scoreTime)*1e-3, score, flyNo, maxFly);
         g2d.setStroke(new BasicStroke(10));
@@ -207,6 +239,11 @@ public class Board extends JPanel implements ActionListener
         g2d.drawLine(B_WIDTH-start, 480, start + B_WIDTH-2*start-(cannon.getPassed()/5), 480);
         g.setFont(new Font("", Font.PLAIN, 15));
         g2d.drawString(sTime, 75, 20); 
+        
+    }
+    
+    private void DrawFloor()
+    {
         
     }
     
@@ -285,15 +322,16 @@ public class Board extends JPanel implements ActionListener
         for(CBall cb : cball)
         {
             Rectangle r2 = cb.getBounds();
+            
             if(r1.intersects(r2))
             {
                 buzz.play();
                 fly.get(flyNo).setVisible(false);
                 
-                score +=(int)(1e+6/(scoreTime-scoreTimeLast));
+                score +=(int)(1e+7/(scoreTime-scoreTimeLast)/ballCount);
                 scoreTimeLast=(System.nanoTime()*1e-6)-scoreTimer;
                 
-                
+                ballCount=1;
                 flyNo++;
                 if(flyNo < maxFly)
                 {
@@ -304,6 +342,14 @@ public class Board extends JPanel implements ActionListener
                     inGame();
                 }
                 
+                cb.setVisible(false);
+            }
+            
+            if(floor.intersects(r2))
+            {
+                Ellipse2D.Double e = new Ellipse2D.Double(cb.getX()-8, cb.getY()-8, 16, 16 );
+                Area sub = new Area(e);
+                floor.subtract(sub);
                 cb.setVisible(false);
             }
         }

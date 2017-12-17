@@ -18,11 +18,13 @@ public class Cannon extends Sprite
     private int passed;
     private ArrayList<CBall> cball;
     private Sound fire;
+    private Sound rotate;
     
     public Cannon(double x, double y)
     {
         super(x, y);
         fire = new Sound("sounds\\fire.wav");
+        rotate = new Sound("sounds\\rotate.wav");
         timer = (int)(System.nanoTime()*1e-6);
         initCannon();
     }
@@ -74,14 +76,16 @@ public class Cannon extends Sprite
         this.angle = -angle;
     }
     
-    public void fire()
+    public boolean fire()
     {
         if(vis&&passed>=1000)
         {
             cball.add(new CBall(x+15, y+10, angle));
             fire.play();
             timer = (int)(System.nanoTime()*1e-6);
+            return true;
         }
+        return false;
     }
     
     public void keyPressed(KeyEvent e)
@@ -96,19 +100,22 @@ public class Cannon extends Sprite
         if(key == KeyEvent.VK_LEFT)
         {
             angle=(angle-5)%360;
+            rotate.play();
             
         }
         
         if(key == KeyEvent.VK_RIGHT)
         {
             angle=(angle+5)%360;
+            rotate.play();
         }
     }
     
     public void rotateToMouse(MouseEvent e)
     {
        
-       setAngle((int) Math.toDegrees(Math.atan2(e.getX()-x, e.getY()-y))-90); 
+       setAngle((int) Math.toDegrees(Math.atan2(e.getX()-x, e.getY()-y))-90);
+       rotate.play();
     }
 
 }
