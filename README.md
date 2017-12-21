@@ -31,3 +31,11 @@ Cannon Sound, Frame, Color Changes, Counter
 -Added a frame that can be damaged by cannonball
 -Changed background and frame color
 -Added a cannonball count so more you miss, lower the score gets.
+
+
+Project Finished Before Deadline
+
+
+-Proje değerlendirilmek üzere gönderildi.
+
+-The project was sent to be evaluated.
